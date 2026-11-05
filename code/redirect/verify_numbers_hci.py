@@ -136,7 +136,7 @@ for v,loc,val in [(0.837,'4.1 EPG tau per speaker max',max(S2['epg_tau_speaker']
     (0.344,'4.2 leave-one-word-out min |rho|',abs(S2['leave_one_word_out']['8 letters']['max'])),(0.512,'4.2 leave-one-word-out max |rho|',abs(S2['leave_one_word_out']['8 letters']['min'])),(31,'4.2 words usable',S2['leave_one_word_out']['8 letters']['n_ok']),
     (0.114,'4.2 partial correlation |r|',abs(S2['partial_feature']['r'])),(0.53,'4.2 partial permutation p',S2['partial_feature']['p_two_sided']),
     (336,'4.1 rank of A0 among 548 on EPG tau_b',OB['rank_A0_by_tau_EPG']),(335,'4.1 layouts above A0',OB['n_layouts_tau_gt_A0']),(0.519,'4.1 tau_b over 548 min',OB['tau_EPG_548_min']),(0.964,'4.1 tau_b over 548 max',OB['tau_EPG_548_max']),(0.794,'4.1 tau_b over 548 median',OB['tau_EPG_548_median'])]:
-    dec = 0 if abs(v) >= 10 or v in (336,335,31,91,548,259200,1679616,40320) else (2 if abs(v - round(v,2)) < 1e-9 and abs(v) < 10 else 3)
+    dec = 0 if abs(v) >= 10 or v in (336,335,31,91,548,259200,1679616,40320) else (2 if abs(float(v) - round(float(v),2)) < 1e-9 else 3)
     chk(v,loc,'round2_stats_hci.json / order_baseline_hci.json',round(float(val),dec),tol=0.0006)
 pc=json.load(open(R+'s5.5-rev/s55r_percentiles.json'))['current (ض midpoint, primary)']
 chk(91,'3.4 rank of A0 SCS among 548','s55r_percentiles.json',pc['collision-free + place-order-preserving']['rank']); chk(548,'3.4 layouts','s55r_percentiles.json',pc['collision-free + place-order-preserving']['n'])

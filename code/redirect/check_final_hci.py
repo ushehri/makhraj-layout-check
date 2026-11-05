@@ -21,24 +21,25 @@ ck('S3a: correct + errors = tokens',(cor,w8+oth+dele),cor+w8+oth+dele==tok)
 pl=pd.read_csv(RS+'s5.4-rev/s54r_per_letter.csv'); ck('S3a rows equal the saved s54r_per_letter.csv (tokens and error counts)',len(pl),len(pl)==8 and list(pl.iloc[:,:].select_dtypes('number').sum().head(0))==[] and int(pl[[c for c in pl.columns if c.lower() in ('n','tokens')][0]].sum())==9766)
 d=[r for r in s3 if 'ḍād' in r[0]][0]; ck('S3a ض ḍād: 814 tokens, 46.1% (manuscript)',(d[2],d[7]),d[2]==814 and abs(d[7]-46.1)<1e-9 and '46.1' in MD and '814' in MD)
 # ---- S3b pairs vs manuscript Table 5
-s3b=rows('Table S3b pairs')[1:]; t5=re.search(r'Table 5\..*?\n\n',MD+'\n\n',flags=re.S).group(0)
+s3b=rows('Table S3b pairs')[1:]; t5=re.search(r'^Table 6\. The six confused pairs.*?\n\n',MD+'\n\n',flags=re.S|re.M).group(0)
 t5rows=[l.strip('|').split('|') for l in t5.split('\n') if l.startswith('| ') and 'Pair' not in l]
 ok=len(t5rows)==6
-for a,b in zip(s3b,t5rows): ok&= int(a[3])==int(b[1]) and abs(float(a[4])-float(b[2]))<1e-9
-ck('S3b pairs: tokens and rates equal manuscript Table 5 (6 pairs)',[(a[3],a[4]) for a in s3b],ok)
+for a,b in zip(s3b,t5rows): bb=[c.strip() for c in b]; ok&= int(a[3])==int(bb[1]) and abs(float(a[4])-float(bb[2]))<0.006
+ck('S3b pairs: tokens and rates equal manuscript Table 6 (6 pairs)',[(a[3],a[4]) for a in s3b],ok)
 # ---- S4 vs manuscript Table 6 vs a2a3_rho.csv
-s4=rows('Table S4'); a=pd.read_csv(RS+'redirect/a2a3_rho.csv'); t6=[l.strip('|').split('|') for l in MD.split('\n') if re.match(r'^\| (A0|A1|A2|A3|B1|B2) ',l)]
+s4=rows('Table S4'); a=pd.read_csv(RS+'redirect/a2a3_rho.csv'); t6=[l.strip('|').split('|') for l in MD.split('\n') if re.match(r'^\| (A0|A1|A2|A3|B1 KAPD|B2 EPG) ',l)] or [l.strip('|').split('|') for l in MD.split('\n') if re.match(r'^\| (A0|A1|A2|A3|B1|B2)\b',l)]
 ok=len(t6)==6; det=[]
 for r in t6:
     key=r[0].strip().split()[0]; srow=[x for x in s4 if x[0]==key][0]
     pos=[float(x) for x in srow[2:10]]; mp=[float(x) for x in r[1:9]]
     ok&=all(abs(p-q)<0.006 for p,q in zip(pos,mp)) and abs(float(srow[10])-float(r[9]))<0.0006 and abs(float(srow[11])-float(r[10]))<0.006
     det.append((key,srow[10],srow[11]))
-ck('S4 equals manuscript Table 6 (positions, ρ, SS for A0–A3, B1, B2)',det,ok)
+# Table 7 alternatives
+ck('S4 equals manuscript Table 7 (positions, ρ, CWS for A0–A3, B1, B2)',det,ok)
 ck('S4 lists B3 with a description',[x[:2] for x in s4 if x[0]=='B3'],any(x[0]=='B3' and x[1] for x in s4))
 lab={'A0':'A0','A1':'A1','A2':'A2','A3':'A3','B1':'B1','B2':'B2','B3':'B3'}
 c0=a.columns.tolist(); ck('a2a3_rho.csv columns',c0,True)
-rho_col=[c for c in c0 if 'rho' in c.lower()][0]; ss_col=[c for c in c0 if c.lower().startswith('ss')][0]; name_col=c0[0]
+rho_col=[c for c in c0 if 'rho' in c.lower()][0]; ss_col=[c for c in c0 if c.lower().startswith('ss') or 'cws' in c.lower()][0]; name_col=c0[0]
 okk=True
 for x in s4[1:]:
     m=a[a[name_col].astype(str).str.startswith(x[0])]
@@ -68,7 +69,7 @@ ck('S1 Word: figure S1 image identical to FigureS1 PNG',len(sd.inline_shapes),le
 ck('Manuscript lists Supplementary File S1 (Word) and S2 (Excel), Tables S1–S6, Figure S1',MD[MD.find('Supplementary Materials'):][:120],all(s in MD for s in ['Supplementary File S1','Supplementary File S2','Table S6','Figure S1']))
 # ---- figures zip
 z=zipfile.ZipFile(F+'Figures-Computers-HCI.zip'); nm=sorted(z.namelist()); ck('Figures zip: Figure1..Figure4 only',nm,nm==['Figure1.png','Figure2.png','Figure3.png','Figure4.png'])
-src=['fig1_layout_600dpi.png','fig2_order_vs_evidence.png','fig3_confusion_vs_distance.png','fig_tradeoff_redirect.png']; wid=[14.5,14.5,9.5,10.5]
+src=['fig1_layout_600dpi.png','fig2_order_vs_evidence.png','fig3_confusion_vs_distance.png','fig_tradeoff_redirect.png']; wid=[12.0,14.5,9.5,10.5]
 for n,s_,w in zip(nm,src,wid):
     im=Image.open(io.BytesIO(z.read(n))); o=Image.open(R+'06-figures/redirect/'+s_)
     ck(f'{n}: 600 dpi tag, pixels identical to {s_}, >=600 dpi at placed width',f'{im.info.get("dpi")}; {im.size[0]} px at {w} cm = {im.size[0]/(w/2.54):.0f} dpi',tuple(round(x) for x in im.info.get('dpi',(0,0)))==(600,600) and np.array_equal(np.array(im.convert('RGBA')),np.array(o.convert('RGBA'))) and im.size[0]/(w/2.54)>=600)
@@ -99,8 +100,18 @@ for f in ('Cover-Letter-Computers-HCI.docx','Supplementary-File-S1-Computers-HCI
     z_=zipfile.ZipFile(F+f); ck(f'{f}: no Word comments, no highlights',(any('comment' in n for n in z_.namelist()),b'w:highlight' in z_.read('word/document.xml')),not any('comment' in n for n in z_.namelist()) and b'w:highlight' not in z_.read('word/document.xml'))
 # ---- cover letter
 cl=text_of(F+'Cover-Letter-Computers-HCI.docx')
-ck('cover letter: special issue, deadline, section, WoZ build-on, hardware paper disclosure, repo URL',[k for k in ['Innovative Research in Human–Computer Interactions','30 December 2026','Human–Computer Interactions','builds on our published Wizard-of-Oz study','SR-10-2026-1100','github.com/ushehri/arabic-vibrotactile-layout-audit','mti10110116'] if k not in cl],all(k in cl for k in ['Innovative Research in Human–Computer Interactions','30 December 2026','Human–Computer Interactions','builds on our published Wizard-of-Oz study','SR-10-2026-1100','github.com/ushehri/arabic-vibrotactile-layout-audit','mti10110116']))
+ck('cover letter: special issue, deadline, section, WoZ build-on, hardware paper disclosure, repo URL',[k for k in ['Innovative Research in Human–Computer Interactions','30 December 2026','Human–Computer Interactions','builds on our published Wizard-of-Oz study','SR-10-2026-1100','github.com/ushehri/makhraj-layout-check','mti10110116'] if k not in cl],all(k in cl for k in ['Innovative Research in Human–Computer Interactions','30 December 2026','Human–Computer Interactions','builds on our published Wizard-of-Oz study','SR-10-2026-1100','github.com/ushehri/makhraj-layout-check','mti10110116']))
 ck('cover letter PDF is one page',subprocess.run('pdfinfo '+F+'Cover-Letter-Computers-HCI.pdf | grep Pages',shell=True,capture_output=True,text=True).stdout.strip(),'Pages:           1' in subprocess.run('pdfinfo '+F+'Cover-Letter-Computers-HCI.pdf | grep Pages',shell=True,capture_output=True,text=True).stdout)
+
+# ---- ADD (round 2): no heatmaps, no IPA in prose, no Supplementary pointers in body, CWS rename, new repo
+body=MD.split('Supplementary Materials:')[0]
+ck('ADD: no Supplementary pointers in body',re.findall(r'Table S\d|Figure S\d',body),not re.search(r'Table S\d|Figure S\d',body))
+ck('ADD: no heatmap wording','heatmap' not in MD.lower(),'heatmap' not in MD.lower())
+prose='\n'.join(l for l in body.split('\n') if not l.startswith('|'))
+ck('ADD: no IPA slash-phonemes in prose',re.findall(r'(?<![A-Za-z0-9])/[a-zA-Zʔʕħʃʒɣχθð.ː]{1,4}/(?![A-Za-z0-9])',prose),not re.search(r'(?<![A-Za-z0-9])/[a-zA-Zʔʕħʃʒɣχθð.ː]{1,4}/(?![A-Za-z0-9])',prose))
+ck('ADD: CWS used (SS renamed)',('CWS' in MD and 'SS (cm)' not in MD),'CWS' in MD and 'SS (cm)' not in MD)
+ck('ADD: Data Availability cites makhraj-layout-check [54]','makhraj-layout-check [54]' in MD and 'arabic-vibrotactile-layout-audit' not in MD,'makhraj-layout-check [54]' in MD and 'arabic-vibrotactile-layout-audit' not in MD)
+ck('ADD: cover letter cites new public repo URL','makhraj-layout-check' in cl and 'arabic-vibrotactile-layout-audit' not in cl,'makhraj-layout-check' in cl and 'arabic-vibrotactile-layout-audit' not in cl)
 # ---- required files and checklist
 need=['Manuscript-Computers-HCI-final.docx','Manuscript-Computers-HCI-final-SUBMIT.docx','Manuscript-Computers-HCI-final-SUBMIT.pdf','Cover-Letter-Computers-HCI.docx','Cover-Letter-Computers-HCI.pdf','Figures-Computers-HCI.zip','Supplementary-File-S1-Computers-HCI.docx','Supplementary-File-S2-Computers-HCI.xlsx','SUBMISSION-CHECKLIST.md']
 ck('all required final files exist',[n for n in need if not os.path.exists(F+n)],all(os.path.exists(F+n) for n in need))

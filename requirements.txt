@@ -1,0 +1,14 @@
+numpy>=1.24
+scipy>=1.10
+pandas>=2.0
+matplotlib>=3.7
+panphon>=0.20
+statsmodels>=0.14
+openpyxl
+arabic-reshaper
+python-bidi
+cairosvg
+python-docx
+lxml
+Pillow
+requests

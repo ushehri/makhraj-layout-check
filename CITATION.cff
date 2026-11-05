@@ -1,0 +1,14 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite it as below."
+title: "makhraj-layout-check: analysis code for Does a Classical Arabic Articulation Order Hold Up? An Evidence Check of a Tongue-to-Forearm Haptic Layout for L2 Pronunciation"
+authors:
+  - family-names: Alshehri
+    given-names: Abdullah S.
+    affiliation: Jubail Industrial College
+    orcid: "https://orcid.org/0000-0002-7646-9257"
+  - family-names: Newbury
+    given-names: Paul
+    affiliation: University of Sussex
+license: MIT
+repository-code: "https://github.com/ushehri/makhraj-layout-check"
+date-released: 2026-11-05

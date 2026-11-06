@@ -1,14 +1,31 @@
-numpy>=1.24
-scipy>=1.10
-pandas>=2.0
-matplotlib>=3.7
-panphon>=0.20
-statsmodels>=0.14
-openpyxl
-arabic-reshaper
-python-bidi
-cairosvg
-python-docx
-lxml
-Pillow
-requests
+# Pinned 6 November 2026 (Europe/London) to the environment that produced
+# the manuscript numbers, for third-party packages the scripts import.
+# Python 3.13.5.
+# numpy==2.5.4, scipy, pandas, matplotlib, panphon, statsmodels, scikit-learn,
+# librosa, soundfile, pyreadr, openpyxl, arabic-reshaper, python-bidi,
+# cairosvg, python-docx and pillow were read from this machine.
+# torch==2.14.1 and transformers==5.19.0 were not installed on the machine
+# at pin time; those two pins are the acoustic-environment versions recorded
+# in README.md when the results were produced (PyTorch CPU).
+# textgrid and pyarrow are imported by some scripts but were not installed
+# here and have no recorded production version, so they are listed without a pin.
+numpy==2.5.4
+scipy==1.18.1
+pandas==3.0.6
+matplotlib==3.11.2
+panphon==0.22.2
+statsmodels==0.15.0
+scikit-learn==1.9.1
+librosa==1.0.0
+soundfile==0.14.0
+torch==2.14.1
+transformers==5.19.0
+textgrid
+pyarrow
+pyreadr==0.5.7
+openpyxl==3.1.5
+arabic-reshaper==3.0.1
+python-bidi==0.6.11
+cairosvg==2.9.1
+python-docx==1.2.0
+pillow==13.0.0

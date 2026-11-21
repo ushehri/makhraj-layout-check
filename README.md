@@ -19,10 +19,46 @@ This repository contains **code only**. No audio, KAPD files, L2-KSU tokens, der
 | Figure 3: confusion vs distance | `code/redirect/fig2_fig3_names.py` | `figures/redirect/fig3_confusion_vs_distance.png` |
 | Section 4.1 EPG permutation baseline and A0 rank among 548 | `code/redirect/order_baseline_hci.py` | `results/redirect/order_baseline_hci.json` |
 | Section 4.2–4.3 leave-one-out, bootstrap, exact Mantel | `code/redirect/round2_stats_hci.py` | `results/redirect/round2_stats_hci.json` |
-| A2/A3 and the 548-layout search | `code/s5.5-rev/s55_rev.py`, `targets.py` | `results/s5.5-rev/s55r_pareto.csv`, `s55r_named_layouts.csv` |
+| A2/A3 and the 548-layout search (original submission; see Revision 1 below for the revised score) | `code/s5.5-rev/s55_rev.py`, `targets.py` | `results/s5.5-rev/s55r_pareto.csv`, `s55r_named_layouts.csv` |
 | Supplementary Files S1/S2 and Figure S1 | `code/redirect/build_supplement_hci.py` | Word/Excel under the manuscript tree when run in the author workspace |
 
 Supporting analysis folders keep their draft section names (`s5.1-rev`, `s5.4-rev`, `s5.5-rev`). Number-check and manuscript-build helpers used for the Computers HCI submission live in `code/redirect/` (`verify_numbers_hci.py`, `check_final_hci.py`, `build_round2_hci.py`, `make_final_hci.py`, `r2lib.py`).
+
+## Revision 1 (November 2026): reproducing the revised numbers
+
+The revised manuscript drops the acoustic (MFCC) term from the layout score. The score now uses only public inputs:
+
+**SCS = 2/3 × articulatory + 1/3 × confusion**, where *articulatory* is the rank correlation of the 28 sleeve distances with the mean of the rank-normalised PanPhon feature distance and the KAPD place difference, and *confusion* is the rank correlation with the negated symmetrised within-eight learner confusion rate. No unreleased acoustic matrix is used or needed. The 2.8 cm cutoff of the A2 rule equals the CWS of A2, so A2 is an illustrative example; the A3 rule (beats A0 on both scores) does not use the cutoff.
+
+All revision scripts are in `code/revision-1/`. They need no MFCC or acoustic data. They write aggregates only to `$LMP_DATA/results/revision-1/`.
+
+| Revised manuscript item | Script | Reported values |
+|---|---|---|
+| Section 3.4, Tables S5 and S7a: SCS without MFCC, A0–A3 component scores, Pareto front | `code/revision-1/check1_no_mfcc.py` | A0 SCS 0.681, 91 layouts higher; A2 0.729 (rank 9); A3 0.719 (rank 26) |
+| Section 3.4, Table S7b: weight and cutoff sensitivity | `check1_no_mfcc.py`, `check1_cutoff_interval.py` | both rules return A2 and A3 for articulatory weights 0.40–1.00; A2 rank 6–46, A3 rank 23–58; A2 returned only for cutoffs in (1.99, 2.80] |
+| Sections 3.4 and 4.3, Table S7c: held-out-learner check of the selection | `check1_cv.py` | re-selection 43% (A2) and 56% (A3) of 100 runs; A0 higher held-out ρ than A2 in 80% and than A3 in 85% of runs |
+| Section 4.1: EPG agreement without tāʼ; back-letter orders | `check2_no_taa.py` | τb 0.810, permutation p = 27/5,040; 256 of 548 layouts higher; 5 orders across 12 cells |
+| Sections 3.3 and 4.2: yāʼ glide / diphthong / long vowel | `check3_yaa.py` | 819 / 605 / 1,830 tokens; no glide errors |
+| Section 4.2: leave-one-word-out (30 words) | `check4_lowo30.py` | 29 estimable words; ρ 0.344–0.512 |
+
+### Inputs (user-supplied, never redistributed)
+- **L2-KSU** (LDC2024S11, CC BY-NC-ND 4.0): obtain your own copy, then build the local token table with
+  `python code/revision-1/r1_parse_l2ksu.py /path/to/L2-KSU-Dataset`. It is written to `$LMP_DATA/s54/tokens.csv`, or to the path in `LMP_L2KSU_TOKENS`. Keep it local: it is derived from L2-KSU and must not be shared.
+- **KAPD** EPG files: `check2_no_taa.py` reads the per-cell EPG measures computed by `code/s5.1-rev/s51_rev.py` (`$LMP_DATA/results/s5.1-rev/s51r_epg_measures_cells.csv`, or the path in `LMP_EPG_CELLS`).
+- PanPhon distances are computed with the `panphon` package.
+
+```bash
+export LMP_DATA=/path/to/local/data
+python code/revision-1/r1_parse_l2ksu.py /path/to/L2-KSU-Dataset   # once
+python code/revision-1/check1_no_mfcc.py
+python code/revision-1/check1_cutoff_interval.py
+python code/revision-1/check1_cv.py
+python code/revision-1/check2_no_taa.py
+python code/revision-1/check3_yaa.py
+python code/revision-1/check4_lowo30.py
+```
+
+The scripts in `code/s5.5-rev/` keep the original submission's three-term score (with MFCC) for the record. They are not needed for the revised results.
 
 ## Provenance (as in the manuscript)
 - KAPD place labels are the KAPD (KACST) team’s expert labels.
